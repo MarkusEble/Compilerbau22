@@ -25,9 +25,13 @@ public class Lexer {
 
     protected Vector<MachineInfo> m_machineList;
     protected String m_input;
+    protected int lineCount;
+
+    int curLine = 0;
 
     public Lexer() {
         m_machineList = new Vector<MachineInfo>();
+        this.lineCount = 0;
     }
 
     public void addMachine(StateMachineBase machine) {
@@ -75,9 +79,14 @@ public class Lexer {
                 bestMatch = machine;
             }
         }
+
+
+
         // set next word [start pos, final pos)
         String nextWord = m_input.substring(0, bestMatch.m_acceptPos);
         m_input = m_input.substring(bestMatch.m_acceptPos);
+
+        curLine += nextWord.length() - nextWord.replace("\n", "").length();
         Token token = new Token();
         token.m_type = bestMatch.m_machine.getType();
         token.m_value = nextWord;
