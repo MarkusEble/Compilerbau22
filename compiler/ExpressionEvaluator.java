@@ -36,20 +36,23 @@ public class ExpressionEvaluator {
         return getUnaryExpr();
     }
 
+    // plusMinusExpr : mulDivExpr ((PLUS|MINUS) mulDivExpr)*
     int getPlusMinusExpr() throws Exception {
         int result = getMulDivExpr();
-        Token nextToken = m_lexer.lookAhead();
-        while (nextToken.m_type == Token.Type.PLUS || nextToken.m_type == Token.Type.MINUS) {
+        while(
+            m_lexer.lookAhead().m_type == Token.Type.PLUS ||
+            m_lexer.lookAhead().m_type == Token.Type.MINUS)
+        {
+            Token nextToken = m_lexer.lookAhead();
             if (nextToken.m_type == Token.Type.PLUS) {
-                m_lexer.advance();
+                m_lexer.expect(Token.Type.PLUS);
                 result += getMulDivExpr();
             } else {
-                m_lexer.advance();
+                m_lexer.expect(Token.Type.MINUS);
                 result -= getMulDivExpr();
             }
-            nextToken = m_lexer.lookAhead();
         }
-        return getMulDivExpr();
+        return result;
     }
 
     int getBitAndOrExpr() throws Exception {
