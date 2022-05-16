@@ -5,6 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import machines.StateMachineChar;
+import machines.StateMachineDecimals;
+import machines.StateMachineGanzzahl;
+import machines.StateMachineIdentifier;
+import machines.StateMachineKeywords;
+import machines.StateMachineLineComment;
+import machines.StateMachineMultiLineComment;
+import machines.StateMachineStringLiteral;
+import machines.StateMachineWhitespaces;
+
 public class Lexer {
 
     static class MachineInfo {
@@ -25,21 +35,69 @@ public class Lexer {
 
     protected Vector<MachineInfo> m_machineList;
     protected String m_input;
+    protected Token m_currentToken;
+    protected String m_currentLine;
+    protected int m_currentLineNumber;
     protected int lineCount;
-
     int curLine = 0;
 
     public Lexer() {
         m_machineList = new Vector<MachineInfo>();
+        addLexerMachines();
         this.lineCount = 0;
+    }
+
+    private void addLexerMachines() {
+        compiler.StateMachineBase identifierMachine = new StateMachineIdentifier();
+        addMachine(identifierMachine);
+        compiler.StateMachineBase ganzzahlMachine = new StateMachineGanzzahl();
+        addMachine(ganzzahlMachine);
+        compiler.StateMachineBase decimalsMachine = new StateMachineDecimals();
+        addMachine(decimalsMachine);
+        compiler.StateMachineBase stringMachine = new StateMachineStringLiteral();
+        addMachine(stringMachine);
+        compiler.StateMachineBase charMachine = new StateMachineChar();
+        addMachine(charMachine);
+        addKeywordMachine("*", compiler.TokenIntf.Type.MUL);
+        addKeywordMachine("/", compiler.TokenIntf.Type.DIV);
+        addKeywordMachine("+", compiler.TokenIntf.Type.PLUS);
+        addKeywordMachine("-", compiler.TokenIntf.Type.MINUS);
+        addKeywordMachine("&", compiler.TokenIntf.Type.BITAND);
+        addKeywordMachine("|", compiler.TokenIntf.Type.BITOR);
+        addKeywordMachine("<<", compiler.TokenIntf.Type.SHIFTLEFT);
+        addKeywordMachine(">>", compiler.TokenIntf.Type.SHIFTRIGHT);
+        addKeywordMachine("==", compiler.TokenIntf.Type.EQUAL);
+        addKeywordMachine("<", compiler.TokenIntf.Type.LESS);
+        addKeywordMachine(">", compiler.TokenIntf.Type.GREATER);
+        addKeywordMachine("!", compiler.TokenIntf.Type.NOT);
+        addKeywordMachine("&&", compiler.TokenIntf.Type.AND);
+        addKeywordMachine("||", compiler.TokenIntf.Type.OR);
+        addKeywordMachine("?", compiler.TokenIntf.Type.QUESTIONMARK);
+        addKeywordMachine(":", compiler.TokenIntf.Type.DOUBLECOLON);
+        compiler.StateMachineBase lineCommentMachine = new StateMachineLineComment();
+        addMachine(lineCommentMachine);
+        compiler.StateMachineBase multiLineCommentMachine = new StateMachineMultiLineComment();
+        addMachine(multiLineCommentMachine);
+        compiler.StateMachineBase whitespaceMachine = new StateMachineWhitespaces();
+        addMachine(whitespaceMachine);
+        addKeywordMachine("if", compiler.TokenIntf.Type.IF);
+        addKeywordMachine("else", compiler.TokenIntf.Type.ELSE);
+    }
+
+    public void addKeywordMachine(String keyword, TokenIntf.Type tokenType) {
+        m_machineList.add(new MachineInfo(new StateMachineKeywords(keyword, tokenType)));
     }
 
     public void addMachine(StateMachineBase machine) {
         m_machineList.add(new MachineInfo(machine));
     }
 
-    public void init(String input) {
+    public void init(String input) throws Exception {
         m_input = input;
+        m_currentToken = new Token();
+        m_currentLine = new String();
+        m_currentLineNumber = 1;
+        advance();
     }
 
     public void initMachines(String input) {
@@ -49,6 +107,13 @@ public class Lexer {
     }
 
     public Token nextWord() throws Exception {
+        // check end of file
+        if (m_input.isEmpty()) {
+            Token token = new Token();
+            token.m_type = Token.Type.EOF;
+            token.m_value = new String();
+            return token;
+        }
         int curPos = 0;
         // initialize machines
         initMachines(m_input);
@@ -79,17 +144,34 @@ public class Lexer {
                 bestMatch = machine;
             }
         }
-
-
-
+        // throw in case of error
+        if (bestMatch.m_machine == null) {
+            throw new CompilerException("Illegal token", m_currentLineNumber, m_currentLine, null);
+        }
         // set next word [start pos, final pos)
         String nextWord = m_input.substring(0, bestMatch.m_acceptPos);
+        if (nextWord.indexOf('\n') != -1) {
+            m_currentLineNumber++;
+            m_currentLine = "";
+        } else {
+            m_currentLine += nextWord;
+        }
         m_input = m_input.substring(bestMatch.m_acceptPos);
 
         curLine += nextWord.length() - nextWord.replace("\n", "").length();
         Token token = new Token();
         token.m_type = bestMatch.m_machine.getType();
         token.m_value = nextWord;
+        return token;
+    }
+
+    public Token nextToken() throws Exception {
+        Token token = nextWord();
+        while (token.m_type == Token.Type.WHITESPACE ||
+                token.m_type == Token.Type.MULTILINECOMMENT ||
+                token.m_type == Token.Type.LINECOMMENT) {
+            token = nextWord();
+        }
         return token;
     }
 
@@ -109,10 +191,10 @@ public class Lexer {
         m_input = m_input.substring(i);
     }
 
-    private List<Token> tokenListe = new ArrayList<>();
-
     public void processInput(String input, OutputStreamWriter outStream) throws Exception {
         m_input = input;
+        m_currentLine = "";
+        m_currentLineNumber = 1;
         // while input available
         while (!m_input.isEmpty()) {
             // get next word
@@ -120,38 +202,40 @@ public class Lexer {
             // break on failure
             if (curWord.m_type == Token.Type.EOF) {
                 outStream.write("ERROR\n");
+                outStream.flush();
                 break;
+            } else if (curWord.m_type == Token.Type.WHITESPACE) {
+                continue;
+            } else {
+                // print word
+                outStream.write(curWord.toString());
+                outStream.write("\n");
+                outStream.flush();
             }
-            // print word
-            //outStream.write(curWord.toString());
-            //outStream.write("\n");
-            //outStream.flush();
-            tokenListe.add(curWord);
         }
-    }
-
-    public Token getCurToken() {
-        return tokenListe.get(0);
     }
 
     public Token lookAhead() {
-        return tokenListe.get(1);
+        return m_currentToken;
     }
 
-    public void advance() {
-        tokenListe.remove(0);
+    public void advance() throws Exception {
+        m_currentToken = nextToken();
     }
 
-    public void expect(Token token) throws Exception {
-        if (token.equals(tokenListe.get(0))) {
+    public void expect(Token.Type tokenType) throws Exception {
+        if (tokenType == m_currentToken.m_type) {
             advance();
+        } else {
+            throw new CompilerException(
+                    "Unexpected token " + m_currentToken.toString(),
+                    m_currentLineNumber, m_currentLine,
+                    Token.type2String(tokenType));
         }
-        throw new Exception("Token not expected");
-
     }
 
-    public boolean accept(Token token) {
-        if (token.equals(tokenListe.get(0))) {
+    public boolean accept(Token.Type tokenType) throws Exception {
+        if (tokenType == m_currentToken.m_type) {
             advance();
             return true;
         }

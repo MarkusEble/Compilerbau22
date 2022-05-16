@@ -19,6 +19,9 @@ public class FileReader implements FileReaderIntf {
 	
 	public void advance() throws Exception {
 		int nextChar = m_inputStreamReader.read();
+		if (nextChar == '\r') {
+		    nextChar = m_inputStreamReader.read();
+		}
 		m_nextChar = (nextChar == -1) ? 0 : (char)nextChar;
 	}
 	
