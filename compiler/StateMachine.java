@@ -75,27 +75,4 @@ public abstract class StateMachine extends StateMachineBase {
 		m_state = previousState;
 		return result;
 	}
-
-	public void addTransitionForLetter(State state, String targetState) {
-		for (char c = 'A'; c <= 'Z'; c++) {
-			state.addTransition(c, targetState);
-		}
-		for (char c = 'a'; c <= 'z'; c++) {
-			state.addTransition(c, targetState);
-		}
-	}
-
-	public void addTransitionForAllAsciiSymbolsExceptQuotationMark(State state, String targetState){
-		for(char c = '!'; c <= '}'; c++){
-			if(c != '"') {
-				state.addTransition(c, targetState);
-			}
-		}
-	}
-
-    public void addTransitionForNumber(State state, String targetState) {
-        for (char i = '0'; i <= '9'; i++) {
-            state.addTransition(i, targetState);
-        }
-    }
 }

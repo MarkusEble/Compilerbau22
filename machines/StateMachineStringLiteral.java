@@ -19,7 +19,7 @@ public class StateMachineStringLiteral extends compiler.StateMachine {
 		m_stateMap.put("start", start);
 
 		compiler.State inStringLiteral = new compiler.State("inStringLiteral");
-		addTransitionForAllAsciiSymbolsExceptQuotationMark(inStringLiteral, "inStringLiteral");
+		inStringLiteral.addTransitionRange(' ', '~', "inStringLiteral");
 		inStringLiteral.addTransition('"', "end");
 		m_stateMap.put("inStringLiteral", inStringLiteral);
 

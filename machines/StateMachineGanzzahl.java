@@ -13,15 +13,9 @@ public class StateMachineGanzzahl extends StateMachine {
 		compiler.State numberZeroToNine = new compiler.State("numberZeroToNine");
 		compiler.State negative = new compiler.State("negative");
 
-		for (int i = 0; i <= 9; i++) {
-			numberZeroToNine.addTransition((char) (i + '0'), "numberZeroToNine");
-		}
-		for (int i = 1; i <= 9; i++) {
-			start.addTransition((char) (i + '0'), "numberZeroToNine");
-		}
-		for (int i = 1; i <= 9; i++) {
-			negative.addTransition((char) (i + '0'), "numberZeroToNine");
-		}
+    	numberZeroToNine.addTransitionRange('0', '9', "numberZeroToNine");
+        start.addTransitionRange('0', '9', "numberZeroToNine");
+        negative.addTransitionRange('0', '9', "numberZeroToNine");
 
 		m_stateMap.put("start", start);
 

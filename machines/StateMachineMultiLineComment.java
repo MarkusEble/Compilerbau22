@@ -28,28 +28,21 @@ public class StateMachineMultiLineComment extends compiler.StateMachine {
         afterSlash.addTransition('*', "inComment");
         m_stateMap.put("afterSlash", afterSlash);
         compiler.State inComment = new compiler.State("inComment");
-        inComment.addTransition(' ', "inComment");
+        inComment.addTransitionRange(' ', '~', "inComment");
         inComment.addTransition('\n', "inComment");
         inComment.addTransition('\t', "inComment");
         inComment.addTransition('\r', "inComment");
-        addTransitionForLetter(inComment, "inComment");
         inComment.addTransition('/', "inComment");
-        for (int i = 0; i <= 9; i++) {
-            inComment.addTransition((char) (i + '0'), "inComment");
-        }
         inComment.addTransition('*', "inCommentAfterStar");
         m_stateMap.put("inComment", inComment);
         compiler.State inCommentAfterStar = new compiler.State("inCommentAfterStar");
+        inCommentAfterStar.addTransitionRange(' ', '~', "inComment");
         inCommentAfterStar.addTransition('*', "inCommentAfterStar");
         inCommentAfterStar.addTransition(' ', "inComment");
         inCommentAfterStar.addTransition('\n', "inComment");
         inCommentAfterStar.addTransition('\t', "inComment");
         inCommentAfterStar.addTransition('\r', "inComment");
-        addTransitionForLetter(inCommentAfterStar, "inComment");
         inCommentAfterStar.addTransition('/', "end");
-        for (int i = 0; i <= 9; i++) {
-            inCommentAfterStar.addTransition((char) (i + '0'), "inComment");
-        }
         m_stateMap.put("inCommentAfterStar", inCommentAfterStar);
         compiler.State end = new compiler.State("end");
         m_stateMap.put("end", end);

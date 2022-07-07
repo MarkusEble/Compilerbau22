@@ -20,6 +20,12 @@ public class State {
 		m_transitionMap.put(String.valueOf(terminal), targetState);
 	}
 
+    public void addTransitionRange(char first, char last, String targetState) {
+        for (char c = first; c <= last; c++) {
+            addTransition(c, targetState);
+        }
+    }
+
 	public String getTransition(char terminal) {
 		return m_transitionMap.get(String.valueOf(terminal));
 	}
