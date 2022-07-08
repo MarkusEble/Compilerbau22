@@ -3,12 +3,12 @@ package test;
 
 public class TestSuite extends TestSuiteIntf {
   
-    public TestSuite(compiler.FileReaderIntf fileReader, TestCaseIntf testCase) {
-    	super(fileReader, testCase);
+    public TestSuite(String input, TestCaseIntf testCase) {
+    	super(input, testCase);
     }
 
 	public void readAndExecuteTestSequence() throws Exception {
-		while (m_fileReader.lookAheadChar() != 0) {
+		while (m_inputReader.lookAheadChar() != 0) {
 			readAndExecuteTestCase();
 		}
 	}
@@ -23,25 +23,25 @@ public class TestSuite extends TestSuiteIntf {
 	
 	public String readTestContent() throws Exception {
 		String testContent = "";
-		while (m_fileReader.lookAheadChar() != '$' && m_fileReader.lookAheadChar() != 0) {
-			testContent += m_fileReader.lookAheadChar();
-			m_fileReader.advance();
+		while (m_inputReader.lookAheadChar() != '$' && m_inputReader.lookAheadChar() != 0) {
+			testContent += m_inputReader.lookAheadChar();
+			m_inputReader.advance();
 		}
 		return testContent;
 	}
 	
 	public void readDollarIn() throws Exception {
-		m_fileReader.expect('$');
-		m_fileReader.expect('I');
-		m_fileReader.expect('N');
-		m_fileReader.expect('\n');
+		m_inputReader.expect('$');
+		m_inputReader.expect('I');
+		m_inputReader.expect('N');
+		m_inputReader.expect('\n');
 	}
 	
 	public void readDollarOut() throws Exception {
-		m_fileReader.expect('$');
-		m_fileReader.expect('O');
-		m_fileReader.expect('U');
-		m_fileReader.expect('T');
-		m_fileReader.expect('\n');
+		m_inputReader.expect('$');
+		m_inputReader.expect('O');
+		m_inputReader.expect('U');
+		m_inputReader.expect('T');
+		m_inputReader.expect('\n');
 	}
 }

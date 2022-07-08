@@ -3,8 +3,17 @@ $IN
 $OUT
 INTEGER 2
 $IN
-ab & 14
+ab*14
 $OUT
-exception: "Illegal token
-at line 1
-ab "
+IDENT ab
+MUL *
+INTEGER 14
+$IN
+22+
+a+b
+$OUT
+INTEGER 22
+PLUS +
+IDENT a
+PLUS +
+IDENT b

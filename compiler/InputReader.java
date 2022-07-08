@@ -1,6 +1,8 @@
 package compiler;
 
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * provide input string as stream
@@ -22,13 +24,34 @@ public class InputReader implements InputReaderIntf, Cloneable {
 		}
 	}
 	
+	public char lookAheadChar() {
+	    return currentChar();
+	}
+
 	public void advance() {
 		if (m_pos != m_input.length()) {
 			m_pos++;
 		}
+		// skip \r in \r\n
+		if (m_pos+1 < m_input.length() && m_input.charAt(m_pos) == '\r' && m_input.charAt(m_pos+1) == '\n') {		    
+		    m_pos++;
+		}
 	}
 	
-	public void traceState(OutputStreamWriter outStream) throws Exception {
+    public void expect(char c) throws Exception {
+        if (currentChar() != c) {
+            String msg = new String("unexpected character: '");
+            msg += currentChar();
+            msg += "'";
+            msg += " expected: '";
+            msg += c;
+            msg += "'";
+            throw new Exception(msg);
+        }
+        advance();
+    }
+    
+    public void traceState(OutputStreamWriter outStream) throws Exception {
 		for (int i = 0; i != m_input.length(); i++) {
 			if (i < m_pos) {
 				// blank already processed characters
@@ -60,5 +83,10 @@ public class InputReader implements InputReaderIntf, Cloneable {
 		return theClone;
 	}
 
+    public static String fileToString(String fileName) throws Exception {
+	   Path filePath = Path.of(fileName);
+	   String content = Files.readString(filePath);
+	   return content;
+	}
 }
 

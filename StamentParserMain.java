@@ -3,7 +3,7 @@ import java.io.OutputStreamWriter;
 public class StamentParserMain {
 
     public static void main(String[] args) throws Exception {
-        String program = compiler.FileReader.fileToString(args[0]);
+        String program = compiler.InputReader.fileToString(args[0]);
         compiler.CompileEnv compileEnv = new compiler.CompileEnv(program, false);
         compiler.Lexer lexer = new compiler.Lexer();
         compiler.Parser parser = new compiler.Parser(compileEnv, lexer);

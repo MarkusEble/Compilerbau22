@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 public abstract class TestSuiteIntf {
-    compiler.FileReaderIntf m_fileReader;
+    compiler.InputReaderIntf m_inputReader;
     TestCaseIntf m_testCase;
 	
     // read and execute a sequence of test cases
@@ -23,8 +23,8 @@ public abstract class TestSuiteIntf {
 	abstract void readDollarOut() throws Exception;
 	
     // creates a test object from an input file
-    TestSuiteIntf(compiler.FileReaderIntf fileReader, TestCaseIntf testCase) {
-        m_fileReader = fileReader;
+    TestSuiteIntf(String input, TestCaseIntf testCase) {
+        m_inputReader = new compiler.InputReader(input);
         m_testCase = testCase;
     }
 
@@ -32,9 +32,7 @@ public abstract class TestSuiteIntf {
 	void executeTestCase(String input, String expectedOutput) throws Exception {
 		String result;
 		try {
-			InputStream inputStream = new ByteArrayInputStream(input.getBytes());
-			compiler.FileReaderIntf fileReader = new compiler.FileReader(inputStream);
-			result = m_testCase.executeTest(fileReader);
+			result = m_testCase.executeTest(input);
 		} catch (Exception e) {
 			result = "exception: \"";
 			result += e.getMessage();

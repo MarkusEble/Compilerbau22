@@ -16,6 +16,7 @@ public interface InputReaderIntf {
 	 * consuming it. 0 means end of input.
 	 */
 	public char currentChar();
+    public char lookAheadChar();
 	
 	/**
 	 * consume current char and
@@ -23,7 +24,13 @@ public interface InputReaderIntf {
 	 */
 	public void advance();
 	
-	/**
+    /**
+     * check if current char is the expected char
+     * consume if yes, throw exception otherwise
+     */
+    public void expect(char c) throws Exception;
+
+    /**
 	 * print current state of input to stream
 	 */
 	public void traceState(OutputStreamWriter outStream) throws Exception;
