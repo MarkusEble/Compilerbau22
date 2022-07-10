@@ -1,4 +1,15 @@
 {
-  PRINT 0 && 1/0;
-  PRINT 1 || 1/0;
+DECLARE in;
+DECLARE out;
+in = 2;
+out = 0;
+5;
+SWITCH(in) {
+  CASE 1: {
+    out = 2; 
+  }
+  CASE 2: {
+    out = 3;
+  }
+}
 }

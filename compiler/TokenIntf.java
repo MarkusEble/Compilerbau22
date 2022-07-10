@@ -56,14 +56,13 @@ public abstract class TokenIntf {
 
 	public Type m_type;
 	public String m_value;
+	public int m_firstLine;
+	public int m_lastLine;
+	public int m_firstCol;
+	public int m_lastCol;
 
 	/**
 	 *  returns a string representation of the current token
 	 */
-	public abstract String toString();
-	
-	/**
-	 * returns a string representation of the given token type
-	 */
-	// static String type2String(Type type);		
+	public abstract String toString();		
 }

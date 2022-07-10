@@ -1,7 +1,5 @@
 package compiler;
 
-import compiler.TokenIntf.Type;
-
 public class Token extends TokenIntf {
 
 	@Override

@@ -134,10 +134,10 @@ public class Parser {
                 case DEFAULT:
                     ret.addCase(getDefaultStmt());
                     if (m_lexer.lookAhead().m_type != TokenIntf.Type.RBRACE)
-                        throw new CompilerException("DEFAULT must be the last case in switch", m_lexer.m_currentLineNumber, m_lexer.m_currentLine, "RBRACE");
+                        m_lexer.throwCompilerException("DEFAULT must be the last case in switch", "RBRACE");
                     return ret; // switch terminates after first default statement => default must go at the end or be omitted
                 default:
-                    throw new CompilerException("unexpected token in switch statement", m_lexer.m_currentLineNumber, m_lexer.m_currentLine, "CASE, DEFAULT or RBRACE");
+                    m_lexer.throwCompilerException("unexpected token in switch statement", "CASE, DEFAULT or RBRACE");
             }
         }
     }
@@ -353,7 +353,8 @@ public class Parser {
         }else if (token.m_type == Token.Type.EXECUTE){
             return getExecuteNTimes();
         }
-        throw new Exception("Unexpected Statement");
+        m_lexer.throwCompilerException("Unexpected Statement", null);
+        return null;
     }
     // declareStmt: DECLARE IDENTIFIER SEMICOLON
     ASTStmtNode getDeclareStmt() throws Exception {

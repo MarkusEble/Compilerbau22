@@ -34,10 +34,8 @@ public class Lexer {
     }
 
     protected Vector<MachineInfo> m_machineList;
-    protected String m_input;
+    protected MultiLineInputReader m_input;
     protected Token m_currentToken;
-    protected String m_currentLine;
-    protected int m_currentLineNumber;
 
     public Lexer() {
         m_machineList = new Vector<MachineInfo>();
@@ -115,10 +113,8 @@ public class Lexer {
     }
 
     public void init(String input) throws Exception {
-        m_input = input;
+        m_input = new MultiLineInputReader(input);
         m_currentToken = new Token();
-        m_currentLine = new String();
-        m_currentLineNumber = 1;
         advance();
     }
 
@@ -138,7 +134,7 @@ public class Lexer {
         }
         int curPos = 0;
         // initialize machines
-        initMachines(m_input);
+        initMachines(m_input.getRemaining());
         // while some machine are in process
         boolean machineActive;
         do {
@@ -168,18 +164,15 @@ public class Lexer {
         }
         // throw in case of error
         if (bestMatch.m_machine == null) {
-            throw new CompilerException("Illegal token", m_currentLineNumber, m_currentLine, null);
+            throw new CompilerException("Illegal token", m_input.getLine(), m_input.getMarkedCodeSnippetCurrentPos(), null);
         }
         // set next word [start pos, final pos)
-        String nextWord = m_input.substring(0, bestMatch.m_acceptPos);
-        if (nextWord.indexOf('\n') != -1) {
-            m_currentLineNumber++;
-            m_currentLine = "";
-        } else {
-            m_currentLine += nextWord;
-        }
-        m_input = m_input.substring(bestMatch.m_acceptPos);
         Token token = new Token();
+        token.m_firstLine = m_input.getLine();
+        token.m_firstCol = m_input.getCol();
+        String nextWord = m_input.advanceAndGet(bestMatch.m_acceptPos);
+        token.m_lastLine = m_input.getLine();
+        token.m_lastCol = m_input.getCol();
         token.m_type = bestMatch.m_machine.getType();
         token.m_value = nextWord;
         return token;
@@ -195,26 +188,8 @@ public class Lexer {
         return token;
     }
 
-    boolean isWhitespace(char c) {
-        if (c == ' ' || c == '\t' || c == '\n') {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    void skipWhiteSpace() {
-        int i = 0;
-        while (i < m_input.length() && isWhitespace(m_input.charAt(i))) {
-            i++;
-        }
-        m_input = m_input.substring(i);
-    }
-
     public void processInput(String input, OutputStreamWriter outStream) throws Exception {
-        m_input = input;
-        m_currentLine = "";
-        m_currentLineNumber = 1;
+        m_input = new MultiLineInputReader(input);
         // while input available
         while (!m_input.isEmpty()) {
             // get next word
@@ -249,7 +224,7 @@ public class Lexer {
         } else {
             throw new CompilerException(
                     "Unexpected token " + m_currentToken.toString(),
-                    m_currentLineNumber, m_currentLine,
+                    m_input.getLine(), m_input.getMarkedCodeSnippetCurrentPos(),
                     Token.type2String(tokenType));
         }
     }
@@ -260,5 +235,10 @@ public class Lexer {
             return true;
         }
         return false;
+    }
+    
+    public void throwCompilerException(String reason, String expected) throws Exception {
+        String codeSnippet = m_input.getMarkedCodeSnippet(m_currentToken.m_firstLine, m_currentToken.m_firstCol, m_currentToken.m_lastLine, m_currentToken.m_lastCol);
+        throw new CompilerException(reason, m_currentToken.m_firstLine, codeSnippet, expected);
     }
 }
